@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vault Note</title>
+<title>Opening Obsidian…</title>
 <style>
   body {
     font-family: system-ui, -apple-system, sans-serif;
@@ -12,17 +12,8 @@
     background: #1a1a2e;
     color: #e0e0e0;
   }
-  h2 { font-weight: 500; margin-bottom: 0.5em; }
-  .note-name {
-    color: #a78bfa; font-size: 1.3em; font-weight: 600;
-    margin: 1em 0 0.3em;
-    user-select: all; -webkit-user-select: all;
-  }
-  .path {
-    color: #666; font-family: monospace; font-size: 0.75em;
-    word-break: break-all; margin-bottom: 1.5em;
-  }
-  .btn {
+  p { color: #999; margin: 1.5em 0; }
+  a.btn {
     display: inline-block;
     padding: 1em 2em;
     background: #7c3aed;
@@ -31,80 +22,18 @@
     text-decoration: none;
     font-size: 1.1em;
     font-weight: 500;
-    margin: 0.5em;
-    border: none;
-    cursor: pointer;
-    -webkit-appearance: none;
   }
-  .btn:active { background: #6d28d9; }
-  .status {
-    font-size: 0.9em;
-    margin-top: 1em;
-    min-height: 1.5em;
-  }
-  .status.ok { color: #34d399; }
-  .hint {
-    color: #555; font-size: 0.8em;
-    margin-top: 2em; line-height: 1.6;
-  }
-  .error { color: #f87171; margin-top: 2em; }
+  a.btn:active { background: #6d28d9; }
 </style>
 </head>
 <body>
-<h2>Vault Note</h2>
+<p>Opening Obsidian…</p>
 <div id="action"></div>
 <script>
-  var params = new URLSearchParams(window.location.search);
-  var vault = params.get('vault');
-  var file = params.get('file');
-
-  if (!vault || !file) {
-    document.getElementById('action').innerHTML = '<p class="error">Missing vault or file parameter.</p>';
-  } else {
-    var decoded = decodeURIComponent(file);
-    var noteName = decoded.split('/').pop();
-
-    var html = '';
-    html += '<p class="note-name" id="notename">' + noteName + '</p>';
-    html += '<p class="path">' + decoded + '</p>';
-    html += '<button class="btn" id="copybtn">Copy Note Name</button>';
-    html += '<p class="status" id="status"></p>';
-    html += '<p class="hint">Tap the button, then open Obsidian and paste into the search bar (swipe down).</p>';
-    document.getElementById('action').innerHTML = html;
-
-    document.getElementById('copybtn').addEventListener('click', function() {
-      var s = document.getElementById('status');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(noteName).then(function() {
-          s.textContent = 'Copied!';
-          s.className = 'status ok';
-        }).catch(function() {
-          fallbackCopy(noteName, s);
-        });
-      } else {
-        fallbackCopy(noteName, s);
-      }
-    });
-
-    function fallbackCopy(text, statusEl) {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        document.execCommand('copy');
-        statusEl.textContent = 'Copied!';
-        statusEl.className = 'status ok';
-      } catch (e) {
-        statusEl.textContent = 'Copy failed — long-press the name above to select and copy manually.';
-        statusEl.className = 'status';
-      }
-      document.body.removeChild(ta);
-    }
-  }
+  var vault = new URLSearchParams(window.location.search).get('vault') || 'Brains Remote';
+  var uri = 'obsidian://open?vault=' + encodeURIComponent(vault);
+  document.getElementById('action').innerHTML = '<a class="btn" href="' + uri + '">Open Vault</a>';
+  window.location.href = uri;
 </script>
 </body>
 </html>
