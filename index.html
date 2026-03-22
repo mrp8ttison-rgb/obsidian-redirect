@@ -13,7 +13,11 @@
     color: #e0e0e0;
   }
   h2 { font-weight: 500; margin-bottom: 0.5em; }
-  p { color: #999; margin-bottom: 2em; }
+  p { color: #999; margin-bottom: 1.5em; }
+  .path {
+    color: #a78bfa; font-family: monospace; font-size: 0.85em;
+    word-break: break-all; margin-bottom: 2em;
+  }
   a.btn {
     display: inline-block;
     padding: 1em 2em;
@@ -23,14 +27,17 @@
     text-decoration: none;
     font-size: 1.1em;
     font-weight: 500;
+    margin: 0.5em;
   }
   a.btn:active { background: #6d28d9; }
+  a.btn.secondary { background: #374151; }
+  a.btn.secondary:active { background: #4b5563; }
   .error { color: #f87171; margin-top: 2em; }
 </style>
 </head>
 <body>
 <h2>Opening in Obsidian…</h2>
-<p>If the note didn't open automatically, tap the button below.</p>
+<p>If the note didn't open automatically, tap a button below.</p>
 <div id="action"></div>
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -40,13 +47,28 @@
   if (!vault) {
     document.getElementById('action').innerHTML = '<p class="error">Missing vault parameter.</p>';
   } else {
-    const uri = 'obsidian://open?vault=' + encodeURIComponent(vault)
+    // Primary: open file directly
+    const openUri = 'obsidian://open?vault=' + encodeURIComponent(vault)
       + (file ? '&file=' + encodeURIComponent(file) : '');
 
-    document.getElementById('action').innerHTML = '<a class="btn" href="' + uri + '">Open in Obsidian</a>';
+    // Fallback: search for the filename (works better with cold-start bug)
+    const filename = file ? file.split('/').pop().replace(/%20/g, ' ') : '';
+    const searchUri = 'obsidian://search?vault=' + encodeURIComponent(vault)
+      + '&query=' + encodeURIComponent(filename);
 
-    // Attempt auto-redirect
-    window.location.href = uri;
+    let html = '';
+    if (file) {
+      html += '<p class="path">' + decodeURIComponent(file).replace(/\//g, ' / ') + '</p>';
+    }
+    html += '<a class="btn" href="' + openUri + '">Open Note</a>';
+    if (file) {
+      html += '<a class="btn secondary" href="' + searchUri + '">Search for It</a>';
+    }
+    document.getElementById('action').innerHTML = html;
+
+    // Try auto-open, then retry after 1.5s (double-open trick for cold-start bug)
+    window.location.href = openUri;
+    setTimeout(function() { window.location.href = openUri; }, 1500);
   }
 </script>
 </body>
