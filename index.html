@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Opening in Obsidian…</title>
+<title>Vault Note</title>
 <style>
   body {
     font-family: system-ui, -apple-system, sans-serif;
@@ -12,13 +12,16 @@
     background: #1a1a2e;
     color: #e0e0e0;
   }
-  h2 { font-weight: 500; margin-bottom: 0.5em; }
-  p { color: #999; margin-bottom: 1.5em; }
-  .path {
-    color: #a78bfa; font-family: monospace; font-size: 0.85em;
-    word-break: break-all; margin-bottom: 2em;
+  h2 { font-weight: 500; margin-bottom: 0.3em; }
+  .note-name {
+    color: #a78bfa; font-size: 1.2em; font-weight: 600;
+    margin: 1em 0;
   }
-  a.btn {
+  .path {
+    color: #888; font-family: monospace; font-size: 0.75em;
+    word-break: break-all; margin-bottom: 1.5em;
+  }
+  .btn {
     display: inline-block;
     padding: 1em 2em;
     background: #7c3aed;
@@ -28,36 +31,63 @@
     font-size: 1.1em;
     font-weight: 500;
     margin: 0.5em;
+    border: none;
+    cursor: pointer;
   }
-  a.btn:active { background: #6d28d9; }
+  .btn:active { background: #6d28d9; }
+  .copied {
+    color: #34d399;
+    font-size: 0.9em;
+    margin-top: 1em;
+    display: none;
+  }
+  .hint {
+    color: #666; font-size: 0.8em;
+    margin-top: 2em; line-height: 1.5;
+  }
   .error { color: #f87171; margin-top: 2em; }
 </style>
 </head>
 <body>
-<h2>Opening in Obsidian…</h2>
-<p>If the note didn't open automatically, tap the button.</p>
+<h2>Vault Note</h2>
 <div id="action"></div>
 <script>
   const params = new URLSearchParams(window.location.search);
   const vault = params.get('vault');
   const file = params.get('file');
 
-  if (!vault) {
-    document.getElementById('action').innerHTML = '<p class="error">Missing vault parameter.</p>';
+  if (!vault || !file) {
+    document.getElementById('action').innerHTML = '<p class="error">Missing vault or file parameter.</p>';
   } else {
-    // Use Advanced URI plugin — handles file opening after vault is loaded
-    const advancedUri = 'obsidian://advanced-uri?vault=' + encodeURIComponent(vault)
-      + (file ? '&filepath=' + encodeURIComponent(file + '.md') : '');
+    const decoded = decodeURIComponent(file);
+    const noteName = decoded.split('/').pop();
+    const fullPath = decoded;
 
     let html = '';
-    if (file) {
-      html += '<p class="path">' + decodeURIComponent(file).replace(/\//g, ' / ') + '</p>';
-    }
-    html += '<a class="btn" href="' + advancedUri + '">Open in Obsidian</a>';
+    html += '<p class="note-name">' + noteName + '</p>';
+    html += '<p class="path">' + fullPath + '</p>';
+    html += '<button class="btn" onclick="copyName()">Copy Note Name</button>';
+    html += '<p class="copied" id="copied">Copied! Open Obsidian → swipe down to search → paste</p>';
+    html += '<p class="hint">Tap to copy, then open Obsidian and paste into Quick Open or Search.</p>';
+
     document.getElementById('action').innerHTML = html;
 
-    // Auto-redirect via Advanced URI
-    window.location.href = advancedUri;
+    function copyName() {
+      navigator.clipboard.writeText(noteName).then(function() {
+        document.getElementById('copied').style.display = 'block';
+      }).catch(function() {
+        // Fallback for older browsers
+        var ta = document.createElement('textarea');
+        ta.value = noteName;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        document.getElementById('copied').style.display = 'block';
+      });
+    }
+    // Expose to onclick
+    window.copyName = copyName;
   }
 </script>
 </body>
