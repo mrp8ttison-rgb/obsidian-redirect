@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening in Obsidian…</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    text-align: center;
+    padding: 3em 1.5em;
+    background: #1a1a2e;
+    color: #e0e0e0;
+  }
+  h2 { font-weight: 500; margin-bottom: 0.5em; }
+  p { color: #999; margin-bottom: 2em; }
+  a.btn {
+    display: inline-block;
+    padding: 1em 2em;
+    background: #7c3aed;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1.1em;
+    font-weight: 500;
+  }
+  a.btn:active { background: #6d28d9; }
+  .error { color: #f87171; margin-top: 2em; }
+</style>
+</head>
+<body>
+<h2>Opening in Obsidian…</h2>
+<p>If the note didn't open automatically, tap the button below.</p>
+<div id="action"></div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const vault = params.get('vault');
+  const file = params.get('file');
+
+  if (!vault) {
+    document.getElementById('action').innerHTML = '<p class="error">Missing vault parameter.</p>';
+  } else {
+    const uri = 'obsidian://open?vault=' + encodeURIComponent(vault)
+      + (file ? '&file=' + encodeURIComponent(file) : '');
+
+    document.getElementById('action').innerHTML = '<a class="btn" href="' + uri + '">Open in Obsidian</a>';
+
+    // Attempt auto-redirect
+    window.location.href = uri;
+  }
+</script>
+</body>
+</html>
