@@ -66,9 +66,8 @@
     }
     document.getElementById('action').innerHTML = html;
 
-    // Try auto-open, then retry after 1.5s (double-open trick for cold-start bug)
-    window.location.href = openUri;
-    setTimeout(function() { window.location.href = openUri; }, 1500);
+    // No auto-redirect — iOS ignores the file param on cold start.
+    // Let the user tap the button after Obsidian is already running.
   }
 </script>
 </body>
