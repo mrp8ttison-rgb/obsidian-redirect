@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vault Note</title>
+<title>Opening in Obsidian…</title>
 <style>
   body {
     font-family: system-ui, -apple-system, sans-serif;
@@ -12,16 +12,17 @@
     background: #1a1a2e;
     color: #e0e0e0;
   }
-  h2 { font-weight: 500; margin-bottom: 0.3em; }
+  h2 { font-weight: 500; margin-bottom: 0.5em; }
+  p { color: #999; margin-bottom: 1.5em; }
   .note-name {
-    color: #a78bfa; font-size: 1.2em; font-weight: 600;
-    margin: 1em 0;
+    color: #a78bfa; font-size: 1.1em; font-weight: 600;
+    margin: 0.8em 0;
   }
   .path {
-    color: #888; font-family: monospace; font-size: 0.75em;
+    color: #666; font-family: monospace; font-size: 0.75em;
     word-break: break-all; margin-bottom: 1.5em;
   }
-  .btn {
+  a.btn {
     display: inline-block;
     padding: 1em 2em;
     background: #7c3aed;
@@ -31,25 +32,13 @@
     font-size: 1.1em;
     font-weight: 500;
     margin: 0.5em;
-    border: none;
-    cursor: pointer;
   }
-  .btn:active { background: #6d28d9; }
-  .copied {
-    color: #34d399;
-    font-size: 0.9em;
-    margin-top: 1em;
-    display: none;
-  }
-  .hint {
-    color: #666; font-size: 0.8em;
-    margin-top: 2em; line-height: 1.5;
-  }
+  a.btn:active { background: #6d28d9; }
   .error { color: #f87171; margin-top: 2em; }
 </style>
 </head>
 <body>
-<h2>Vault Note</h2>
+<h2>Opening in Obsidian…</h2>
 <div id="action"></div>
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -61,33 +50,20 @@
   } else {
     const decoded = decodeURIComponent(file);
     const noteName = decoded.split('/').pop();
-    const fullPath = decoded;
+
+    // Use obsidian://adv-uri (new scheme, v1.44.0+, single encoding)
+    // filepath needs %2F for slashes, %20 for spaces
+    const advUri = 'obsidian://adv-uri?vault=' + encodeURIComponent(vault)
+      + '&filepath=' + encodeURIComponent(decoded);
 
     let html = '';
     html += '<p class="note-name">' + noteName + '</p>';
-    html += '<p class="path">' + fullPath + '</p>';
-    html += '<button class="btn" onclick="copyName()">Copy Note Name</button>';
-    html += '<p class="copied" id="copied">Copied! Open Obsidian → swipe down to search → paste</p>';
-    html += '<p class="hint">Tap to copy, then open Obsidian and paste into Quick Open or Search.</p>';
-
+    html += '<p class="path">' + decoded + '</p>';
+    html += '<a class="btn" href="' + advUri + '">Open in Obsidian</a>';
     document.getElementById('action').innerHTML = html;
 
-    function copyName() {
-      navigator.clipboard.writeText(noteName).then(function() {
-        document.getElementById('copied').style.display = 'block';
-      }).catch(function() {
-        // Fallback for older browsers
-        var ta = document.createElement('textarea');
-        ta.value = noteName;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        document.getElementById('copied').style.display = 'block';
-      });
-    }
-    // Expose to onclick
-    window.copyName = copyName;
+    // Auto-redirect
+    window.location.href = advUri;
   }
 </script>
 </body>
