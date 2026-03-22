@@ -30,14 +30,12 @@
     margin: 0.5em;
   }
   a.btn:active { background: #6d28d9; }
-  a.btn.secondary { background: #374151; }
-  a.btn.secondary:active { background: #4b5563; }
   .error { color: #f87171; margin-top: 2em; }
 </style>
 </head>
 <body>
 <h2>Opening in Obsidian…</h2>
-<p>If the note didn't open automatically, tap a button below.</p>
+<p>If the note didn't open automatically, tap the button.</p>
 <div id="action"></div>
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -47,27 +45,19 @@
   if (!vault) {
     document.getElementById('action').innerHTML = '<p class="error">Missing vault parameter.</p>';
   } else {
-    // Primary: open file directly
-    const openUri = 'obsidian://open?vault=' + encodeURIComponent(vault)
-      + (file ? '&file=' + encodeURIComponent(file) : '');
-
-    // Fallback: search for the filename (works better with cold-start bug)
-    const filename = file ? file.split('/').pop().replace(/%20/g, ' ') : '';
-    const searchUri = 'obsidian://search?vault=' + encodeURIComponent(vault)
-      + '&query=' + encodeURIComponent(filename);
+    // Use Advanced URI plugin — handles file opening after vault is loaded
+    const advancedUri = 'obsidian://advanced-uri?vault=' + encodeURIComponent(vault)
+      + (file ? '&filepath=' + encodeURIComponent(file + '.md') : '');
 
     let html = '';
     if (file) {
       html += '<p class="path">' + decodeURIComponent(file).replace(/\//g, ' / ') + '</p>';
     }
-    html += '<a class="btn" href="' + openUri + '">Open Note</a>';
-    if (file) {
-      html += '<a class="btn secondary" href="' + searchUri + '">Search for It</a>';
-    }
+    html += '<a class="btn" href="' + advancedUri + '">Open in Obsidian</a>';
     document.getElementById('action').innerHTML = html;
 
-    // No auto-redirect — iOS ignores the file param on cold start.
-    // Let the user tap the button after Obsidian is already running.
+    // Auto-redirect via Advanced URI
+    window.location.href = advancedUri;
   }
 </script>
 </body>
